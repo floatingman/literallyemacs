@@ -6,6 +6,81 @@
 :TOC:      :include all :ignore this
 :END:
 :CONTENTS:
+- [[#startup-performance][Startup Performance]]
+- [[#keep-emacsd-clean][Keep .emacs.d Clean]]
+- [[#package-management][Package Management]]
+- [[#update-load-path][Update Load Path]]
+- [[#helper-functions][Helper Functions]]
+  - [[#platform-helpers][Platform Helpers]]
+- [[#start-the-server][Start the server]]
+- [[#keyboard-bindings][Keyboard Bindings]]
+  - [[#esc-cancels-all][ESC Cancels All]]
+  - [[#rebind-c-u][Rebind C-u]]
+  - [[#evil-mode][Evil mode]]
+  - [[#keybinding-panel-which-key][Keybinding Panel (which-key)]]
+  - [[#general-mode-for-simple-keybinding][General mode for simple keybinding]]
+- [[#general-configuration][General Configuration]]
+  - [[#user-interface][User Interface]]
+  - [[#theme][Theme]]
+    - [[#icons][Icons]]
+  - [[#font][Font]]
+    - [[#set-the-font][Set the font]]
+    - [[#enable-proper-unicode-glyph-support][Enable proper Unicode glyph support]]
+    - [[#emojis-in-buffers][Emojis in buffers]]
+  - [[#mode-line][Mode Line]]
+    - [[#basic-customization][Basic Customization]]
+    - [[#enable-mode-diminishing][Enable Mode Diminishing]]
+    - [[#doom-modeline][Doom Modeline]]
+  - [[#notifications][Notifications]]
+  - [[#auto-saving-changed-files][Auto-Saving Changed Files]]
+  - [[#auto-reverting-changed-files][Auto-Reverting Changed Files]]
+  - [[#ui-toggles][UI Toggles]]
+- [[#editing-configurations][Editing Configurations]]
+  - [[#tab-widths][Tab Widths]]
+  - [[#spaces-instead-of-tabs][Spaces instead of tabs]]
+- [[#hail-hydra][Hail Hydra]]
+- [[#ivy-for-completions][Ivy for completions]]
+- [[#jumping-around-with-avy][Jumping around with Avy]]
+- [[#org-mode][Org Mode]]
+  - [[#org-configuration][Org Configuration]]
+  - [[#weekly-planning][Weekly Planning]]
+  - [[#automatically-tangle-on-save][Automatically "Tangle" on Save]]
+  - [[#fonts-and-bullets][Fonts and Bullets]]
+  - [[#org-file-paths][Org File Paths]]
+  - [[#agenda][Agenda]]
+  - [[#tags][Tags]]
+  - [[#tasks][Tasks]]
+  - [[#journal][Journal]]
+  - [[#capture-templates][Capture Templates]]
+  - [[#block-templates][Block Templates]]
+  - [[#pomodoro][Pomodoro]]
+  - [[#protocol][Protocol]]
+  - [[#searching][Searching]]
+  - [[#bindings][Bindings]]
+  - [[#end-use-package-org-mode][End use-package org-mode]]
+  - [[#update-table-of-contents-on-save][Update Table of Contents on Save]]
+  - [[#automatically-tangle-on-save][Automatically "Tangle" on Save]]
+- [[#productivity][Productivity]]
+  - [[#syntax-checking-with-flycheck][Syntax checking with Flycheck]]
+  - [[#snippets][Snippets]]
+  - [[#smart-parenthesis][Smart Parenthesis]]
+  - [[#rainbow-delimiters][Rainbow Delimiters]]
+  - [[#rainbow-mode][Rainbow Mode]]
+- [[#development][Development]]
+  - [[#git][Git]]
+    - [[#magit][Magit]]
+    - [[#magit-todos][Magit todos]]
+    - [[#git-link][Git Link]]
+    - [[#git-gutter][Git Gutter]]
+  - [[#projectile][Projectile]]
+    - [[#initial-setup][Initial Setup]]
+  - [[#languages][Languages]]
+    - [[#language-server-support][Language Server Support]]
+    - [[#meta-lisp][Meta Lisp]]
+    - [[#common-lisp][Common Lisp]]
+    - [[#scheme][Scheme]]
+    - [[#emacs-lisp][Emacs Lisp]]
+- [[#streamingpairing][Streaming/Pairing]]
 :END:
 
 * Startup Performance
@@ -271,13 +346,13 @@ Based on which platform set an appropriate font
    (on-platform-do
     ((windows cygwin) (set-face-attribute 'default nil :font "Fira Mono:antialias=subpixel" :height 130))
      (osx (set-face-attribute 'default nil :font "Fira Mono" :height 170))
-     (linux (set-face-attribute 'default nil :font "Fira Code Retina" :height 220)))
+     (linux (set-face-attribute 'default nil :font "Fira Code Retina" :height 150)))
 
    ;; Set the fixed pitch face
-   (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 200)
+   (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 130)
 
    ;; Set the variable pitch face
-   (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 245 :weight 'regular)
+   (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 165 :weight 'regular)
 #+end_src
 *** Enable proper Unicode glyph support
 #+begin_src emacs-lisp
@@ -500,6 +575,17 @@ Default to an indentation size of 2 spaces
   "fR"  '(revert-buffer :which-key "revert file")
   "fj"  '(counsel-file-jump :which-key "jump to file"))
 #+end_src
+*  Jumping around with Avy
+#+begin_src emacs-lisp
+(use-package avy
+  :commands (avy-goto-char avy-goto-word-0 avy-goto-line))
+
+(dn/leader-key-def
+  "j" '(:ignore t :which-key "jump")
+  "jj" '(avy-goto-char :which-key "jump to char")
+  "jw" '(avy-goto-word-0 :which-key "jump to word")
+  "jl" '(avy-goto-line :which-key "jump to line"))
+#+end_src
 * Org Mode
 ** Org Configuration
 Basic configuration of org mode
@@ -668,7 +754,6 @@ Use bullet characters instead of asterisks, plus set the header font sizes to so
     (list
       (dn/org-path "Habits.org")
       (dn/org-path "Work.org")
-      (dn/org-path "AutoRest.org")
       (dn/org-path "Calendar/Personal.org")
       (dn/org-path "Calendar/Work.org")
       (dn/org-path "Projects.org")))
@@ -973,6 +1058,12 @@ through =emacsclient.=
 
 #+end_src
 
+** Update Table of Contents on Save
+It's nice to have a table of contents section for long literate configuration files. Using org-make-toc to automatically update the ToC in any header with a property named TOC
+#+begin_src emacs-lisp
+(use-package org-make-toc
+  :hook (org-mode . org-make-toc-mode))
+#+end_src
 ** Automatically "Tangle" on Save
 #+begin_src emacs-lisp
   ;; since we don't want to disable org-confirm-babel-evaluate all
@@ -1047,8 +1138,22 @@ Sets the background of HTML color strings in buffers to be the color mentioned.
   "gf"  'magit-fetch
   "gF"  'magit-fetch-all
   "gr"  'magit-rebase)
-
-(use-package magit-todos)
+#+end_src
+*** Magit todos
+This will display all todos in the Magit status buffer in your repo
+#+begin_src emacs-lisp
+(use-package magit-todos
+	:defer t)
+#+end_src
+*** Git Link 
+This will open the git repo in a browser
+#+begin_src emacs-lisp
+(use-package git-link
+  :commands git-link
+  :config
+  (setq git-link-open-in-browser t)
+  (dn/leader-key-def
+    "gL" 'git-link))
 #+end_src
 *** Git Gutter
 #+begin_src emacs-lisp
@@ -1125,8 +1230,8 @@ Sets the background of HTML color strings in buffers to be the color mentioned.
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "~/Projects/Code")
-    (setq projectile-project-search-path '("~/Projects/Code")))
+  (when (file-directory-p "~/Repos")
+    (setq projectile-project-search-path '("~/Repos")))
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
