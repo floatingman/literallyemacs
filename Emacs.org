@@ -83,13 +83,15 @@
     - [[#typescript-and-javascript][Typescript and JavaScript]]
     - [[#yaml][Yaml]]
 - [[#streamingpairing][Streaming/Pairing]]
-- [[#eshell][Eshell]]
-  - [[#configuration][Configuration]]
-  - [[#visual-commands][Visual Commands]]
-  - [[#fish-completion][Fish Completion]]
-  - [[#command-highlighting][Command Highlighting]]
-  - [[#history-autocompletion][History Autocompletion]]
-  - [[#toggling-eshell][Toggling Eshell]]
+- [[#shells][Shells]]
+  - [[#eshell][Eshell]]
+    - [[#configuration][Configuration]]
+    - [[#visual-commands][Visual Commands]]
+    - [[#fish-completion][Fish Completion]]
+    - [[#command-highlighting][Command Highlighting]]
+    - [[#history-autocompletion][History Autocompletion]]
+    - [[#toggling-eshell][Toggling Eshell]]
+  - [[#vterm][Vterm]]
 :END:
 
 * Startup Performance
@@ -1432,8 +1434,9 @@ Configure TypeScript and JavaScript language modes
 (dn/leader-key-def
   "tc" 'dn/toggle-command-window)
 #+end_src
-* Eshell
-** Configuration
+* Shells
+** Eshell
+*** Configuration
 #+begin_src emacs-lisp
 (defun read-file (file-path)
   (with-temp-buffer
@@ -1559,26 +1562,26 @@ Configure TypeScript and JavaScript language modes
 (dn/leader-key-def
   "SPC" 'eshell)
 #+end_src
-** Visual Commands
+*** Visual Commands
 #+begin_src emacs-lisp
 (with-eval-after-load 'esh-opt
   (setq eshell-destroy-buffer-when-process-dies t)
   (setq eshell-visual-commands '("htop" "zsh" "vim")))
 #+end_src
-** Fish Completion
+*** Fish Completion
 This enhances eshell’s completions with those that Fish is capable of and also falls back to any additional completions that are configured for Bash on the system. The primary benefit here (for me) is getting completion for commits and branches in git commands.
 #+begin_src emacs-lisp
 (use-package fish-completion
   :hook (eshell-mode . fish-completion-mode))
 #+end_src
-** Command Highlighting
+*** Command Highlighting
 #+begin_src emacs-lisp
 (use-package eshell-syntax-highlighting
   :after esh-mode
   :config
   (eshell-syntax-highlighting-global-mode +1))
 #+end_src
-** History Autocompletion
+*** History Autocompletion
 #+begin_src emacs-lisp
 (use-package esh-autosuggest
   :hook (eshell-mode . esh-autosuggest-mode)
@@ -1587,7 +1590,7 @@ This enhances eshell’s completions with those that Fish is capable of and also
   (set-face-foreground 'company-preview-common "#4b5668")
   (set-face-background 'company-preview nil))
 #+end_src
-** Toggling Eshell
+*** Toggling Eshell
 This allows me to toggle an Eshell window below the current buffer for the the path of the buffer
 #+begin_src emacs-lisp
 (use-package eshell-toggle
@@ -1596,4 +1599,12 @@ This allows me to toggle an Eshell window below the current buffer for the the p
   (eshell-toggle-size-fraction 3)
   (eshell-toggle-use-projectile-root t)
   (eshell-toggle-run-command nil))
+#+end_src
+** Vterm 
+Vterm enables the use of fully-fledged terminal application
+#+begin_src emacs-lisp
+(use-package vterm
+  :commands vterm
+  :config
+  (setq vterm-max-scrollback 10000))
 #+end_src
