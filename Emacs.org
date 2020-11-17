@@ -59,7 +59,7 @@
   - [[#bindings][Bindings]]
   - [[#end-use-package-org-mode][End use-package org-mode]]
   - [[#update-table-of-contents-on-save][Update Table of Contents on Save]]
-  - [[#automatically-tangle-on-save][Automatically "Tangle" on Save]]
+  - [[#presentations][Presentations]]
 - [[#productivity][Productivity]]
   - [[#syntax-checking-with-flycheck][Syntax checking with Flycheck]]
   - [[#snippets][Snippets]]
@@ -80,6 +80,7 @@
     - [[#common-lisp][Common Lisp]]
     - [[#scheme][Scheme]]
     - [[#emacs-lisp][Emacs Lisp]]
+    - [[#typescript-and-javascript][Typescript and JavaScript]]
 - [[#streamingpairing][Streaming/Pairing]]
 :END:
 
@@ -1064,17 +1065,32 @@ It's nice to have a table of contents section for long literate configuration fi
 (use-package org-make-toc
   :hook (org-mode . org-make-toc-mode))
 #+end_src
-** Automatically "Tangle" on Save
+** Presentations
 #+begin_src emacs-lisp
-  ;; since we don't want to disable org-confirm-babel-evaluate all
-  ;; of the time, do it around the after-save-hook
-  (defun dn/org-babel-tangle-dont-ask ()
-    ;; Dynamic scoping to the rescue
-    (let ((org-confirm-babel-evaluate nil))
-      (org-babel-tangle)))
+(defun dn/org-start-presentation ()
+  (interactive)
+  (org-tree-slide-mode 1)
+  (setq text-scale-mode-amount 3)
+  (text-scale-mode 1))
 
-  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'dn/org-babel-tangle-dont-ask
-						'run-at-end 'only-in-org-mode)))
+(defun dn/org-end-presentation ()
+  (interactive)
+  (text-scale-mode 0)
+ 	(org-tree-slide-mode 0))
+
+(use-package org-tree-slide
+  :defer t
+  :after org
+  :commands org-tree-slide-mode
+  :config
+  (evil-define-key 'normal org-tree-slide-mode-map
+    (kbd "q") 'dn/org-end-presentation
+    (kbd "C-j") 'org-tree-slide-move-next-tree
+    (kbd "C-k") 'org-tree-slide-move-previous-tree)
+  (setq org-tree-slide-slide-in-effect nil
+        org-tree-slide-activate-message "Presentation started."
+        org-tree-slide-deactivate-message "Presentation ended."
+        org-tree-slide-header t))
 #+end_src
 * Productivity
 ** Syntax checking with Flycheck
@@ -1328,6 +1344,44 @@ Here are packages that are useful across different Lisp and Scheme implementatio
     ([remap describe-command] . helpful-command)
     ([remap describe-variable] . counsel-describe-variable)
     ([remap describe-key] . helpful-key))
+#+end_src
+*** Typescript and JavaScript
+Set up nvm so that we can manage Node versions
+#+begin_src emacs-lisp
+(use-package nvm
+  :defer t)
+#+end_src
+
+Configure TypeScript and JavaScript language modes
+#+begin_src emacs-lisp
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :config
+  (setq typescript-indent-level 2))
+
+(defun dn/set-js-indentation ()
+  (setq js-indent-level 2)
+  (setq evil-shift-wdith js-indent-level)
+  (setq-default tab-width 2))
+
+(use-package js2-mode
+  :mode "\\.jsx?\\'"
+  :config
+  ;; Use js2-mode for Node scripts
+  (add-to-list 'magic-mode-alist '("#!/usr/bin/env node" . js2-mode))
+
+  ;; Don't use built-in syntax checking
+  (setq js2-mode-show-strict-warnings nil)
+
+  ;; Set up proper indentation in JavaScript and JSON files
+  (add-hook 'js2-mode-hook #'dn/set-js-indentation)
+  (add-hook 'json-mode-hook #'dn/set-js-indentation))
+
+(use-package prettier-js
+  :hook ((js2-mode . prettier-js-mode)
+         (typescript-mode . prettier-js-mode))
+  :config
+  (setq prettier-js-show-errors nil))
 #+end_src
 * Streaming/Pairing
 #+begin_src emacs-lisp
