@@ -41,6 +41,9 @@
 - [[#hail-hydra][Hail Hydra]]
 - [[#ivy-for-completions][Ivy for completions]]
 - [[#jumping-around-with-avy][Jumping around with Avy]]
+- [[#files][Files]]
+  - [[#dired-mode][Dired mode]]
+  - [[#open-with][Open with]]
 - [[#org-mode][Org Mode]]
   - [[#org-configuration][Org Configuration]]
   - [[#weekly-planning][Weekly Planning]]
@@ -83,15 +86,21 @@
     - [[#typescript-and-javascript][Typescript and JavaScript]]
     - [[#yaml][Yaml]]
 - [[#streamingpairing][Streaming/Pairing]]
-- [[#shells][Shells]]
-  - [[#eshell][Eshell]]
-    - [[#configuration][Configuration]]
-    - [[#visual-commands][Visual Commands]]
-    - [[#fish-completion][Fish Completion]]
-    - [[#command-highlighting][Command Highlighting]]
-    - [[#history-autocompletion][History Autocompletion]]
-    - [[#toggling-eshell][Toggling Eshell]]
-  - [[#vterm][Vterm]]
+- [[#applications][Applications]]
+  - [[#binding][Binding]]
+  - [[#shells][Shells]]
+    - [[#eshell][Eshell]]
+      - [[#configuration][Configuration]]
+      - [[#visual-commands][Visual Commands]]
+      - [[#fish-completion][Fish Completion]]
+      - [[#command-highlighting][Command Highlighting]]
+      - [[#history-autocompletion][History Autocompletion]]
+      - [[#toggling-eshell][Toggling Eshell]]
+    - [[#vterm][Vterm]]
+  - [[#elfeed][Elfeed]]
+  - [[#media][Media]]
+    - [[#emms][EMMS]]
+    - [[#pulseaudio][PulseAudio]]
 :END:
 
 * Startup Performance
@@ -596,6 +605,116 @@ Default to an indentation size of 2 spaces
   "jj" '(avy-goto-char :which-key "jump to char")
   "jw" '(avy-goto-word-0 :which-key "jump to word")
   "jl" '(avy-goto-line :which-key "jump to line"))
+#+end_src
+* Files
+** Dired mode
+#+begin_src emacs-lisp
+(use-package dired
+  :ensure nil
+  :defer 1
+  :commands (dired dired-jump)
+  :config
+  (setq dired-listing-switches "-agho --group-directories-first"
+        dired-omit-files "^\\.[^.].*"
+        dired-omit-verbose nil)
+
+  (autoload 'dired-omit-mode "dired-x")
+
+  (add-hook 'dired-load-hook
+    (lambda ()
+    (interactive)
+    (dired-collapse)))
+  
+	(use-package all-the-icons-dired)
+  
+  (add-hook 'dired-mode-hook
+    (lambda ()
+    (interactive)
+    (dired-omit-mode 1)
+    (unless (s-equals? "/gnu/store/" (expand-file-name default-directory))
+      (all-the-icons-dired-mode 1))
+    (hl-line-mode 1)))
+
+  (use-package dired-rainbow
+    :defer 2
+    :config
+    (dired-rainbow-define-chmod directory "#6cb2eb" "d.*")
+    (dired-rainbow-define html "#eb5286" ("css" "less" "sass" "scss" "htm" "html" "jhtm" "mht" "eml" "mustache" "xhtml"))
+    (dired-rainbow-define xml "#f2d024" ("xml" "xsd" "xsl" "xslt" "wsdl" "bib" "json" "msg" "pgn" "rss" "yaml" "yml" "rdata"))
+    (dired-rainbow-define document "#9561e2" ("docm" "doc" "docx" "odb" "odt" "pdb" "pdf" "ps" "rtf" "djvu" "epub" "odp" "ppt" "pptx"))
+    (dired-rainbow-define markdown "#ffed4a" ("org" "etx" "info" "markdown" "md" "mkd" "nfo" "pod" "rst" "tex" "textfile" "txt"))
+    (dired-rainbow-define database "#6574cd" ("xlsx" "xls" "csv" "accdb" "db" "mdb" "sqlite" "nc"))
+    (dired-rainbow-define media "#de751f" ("mp3" "mp4" "mkv" "MP3" "MP4" "avi" "mpeg" "mpg" "flv" "ogg" "mov" "mid" "midi" "wav" "aiff" "flac"))
+    (dired-rainbow-define image "#f66d9b" ("tiff" "tif" "cdr" "gif" "ico" "jpeg" "jpg" "png" "psd" "eps" "svg"))
+    (dired-rainbow-define log "#c17d11" ("log"))
+    (dired-rainbow-define shell "#f6993f" ("awk" "bash" "bat" "sed" "sh" "zsh" "vim"))
+    (dired-rainbow-define interpreted "#38c172" ("py" "ipynb" "rb" "pl" "t" "msql" "mysql" "pgsql" "sql" "r" "clj" "cljs" "scala" "js"))
+    (dired-rainbow-define compiled "#4dc0b5" ("asm" "cl" "lisp" "el" "c" "h" "c++" "h++" "hpp" "hxx" "m" "cc" "cs" "cp" "cpp" "go" "f" "for" "ftn" "f90" "f95" "f03" "f08" "s" "rs" "hi" "hs" "pyc" ".java"))
+    (dired-rainbow-define executable "#8cc4ff" ("exe" "msi"))
+    (dired-rainbow-define compressed "#51d88a" ("7z" "zip" "bz2" "tgz" "txz" "gz" "xz" "z" "Z" "jar" "war" "ear" "rar" "sar" "xpi" "apk" "xz" "tar"))
+    (dired-rainbow-define packaged "#faad63" ("deb" "rpm" "apk" "jad" "jar" "cab" "pak" "pk3" "vdf" "vpk" "bsp"))
+    (dired-rainbow-define encrypted "#ffed4a" ("gpg" "pgp" "asc" "bfe" "enc" "signature" "sig" "p12" "pem"))
+    (dired-rainbow-define fonts "#6cb2eb" ("afm" "fon" "fnt" "pfb" "pfm" "ttf" "otf"))
+    (dired-rainbow-define partition "#e3342f" ("dmg" "iso" "bin" "nrg" "qcow" "toast" "vcd" "vmdk" "bak"))
+    (dired-rainbow-define vc "#0074d9" ("git" "gitignore" "gitattributes" "gitmodules"))
+    (dired-rainbow-define-chmod executable-unix "#38c172" "-.*x.*"))
+
+  (use-package dired-single
+    :ensure t
+    :defer t)
+
+  (use-package dired-ranger
+    :defer t)
+
+  (use-package dired-collapse
+    :defer t)
+
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "H" 'dired-omit-mode
+    "l" 'dired-single-buffer
+    "y" 'dired-ranger-copy
+    "X" 'dired-ranger-move
+    "p" 'dired-ranger-paste))
+
+(defun dn/dired-link (path)
+  (lexical-let ((target path))
+    (lambda () (interactive) (message "Path: %s" target) (dired target))))
+
+(dn/leader-key-def
+  "d"   '(:ignore t :which-key "dired")
+  "dd"  '(dired :which-key "Here")
+  "dh"  `(,(dn/dired-link "~") :which-key "Home")
+  "dn"  `(,(dn/dired-link "~/Notes") :which-key "Notes")
+  "do"  `(,(dn/dired-link "~/Downloads") :which-key "Downloads")
+  "dp"  `(,(dn/dired-link "~/Pictures") :which-key "Pictures")
+  "dv"  `(,(dn/dired-link "~/Videos") :which-key "Videos")
+  "d."  `(,(dn/dired-link "~/.dotfiles") :which-key "dotfiles")
+  "de"  `(,(dn/dired-link "~/.emacs.d") :which-key ".emacs.d"))
+#+end_src
+** Open with
+#+begin_src emacs-lisp
+(use-package openwith
+  :config
+  (setq openwith-associations
+    (list
+      (list (openwith-make-extension-regexp
+             '("mpg" "mpeg" "mp3" "mp4"
+               "avi" "wmv" "wav" "mov" "flv"
+               "ogm" "ogg" "mkv"))
+             "mpv"
+             '(file))
+      (list (openwith-make-extension-regexp
+             '("xbm" "pbm" "pgm" "ppm" "pnm"
+               "png" "gif" "bmp" "tif" "jpeg")) ;; Removed jpg because Telega was
+                                                ;; causing feh to be opened...
+             "feh"
+             '(file))
+      (list (openwith-make-extension-regexp
+             '("pdf"))
+             "zathura"
+             '(file))))
+  (openwith-mode 1))
 #+end_src
 * Org Mode
 ** Org Configuration
@@ -1434,9 +1553,15 @@ Configure TypeScript and JavaScript language modes
 (dn/leader-key-def
   "tc" 'dn/toggle-command-window)
 #+end_src
-* Shells
-** Eshell
-*** Configuration
+* Applications
+** Binding
+#+begin_src emacs-lisp
+(dn/leader-key-def
+	"a" '(:ignore t :which-key "apps"))
+#+end_src
+** Shells
+*** Eshell
+**** Configuration
 #+begin_src emacs-lisp
 (defun read-file (file-path)
   (with-temp-buffer
@@ -1562,26 +1687,26 @@ Configure TypeScript and JavaScript language modes
 (dn/leader-key-def
   "SPC" 'eshell)
 #+end_src
-*** Visual Commands
+**** Visual Commands
 #+begin_src emacs-lisp
 (with-eval-after-load 'esh-opt
   (setq eshell-destroy-buffer-when-process-dies t)
   (setq eshell-visual-commands '("htop" "zsh" "vim")))
 #+end_src
-*** Fish Completion
+**** Fish Completion
 This enhances eshell’s completions with those that Fish is capable of and also falls back to any additional completions that are configured for Bash on the system. The primary benefit here (for me) is getting completion for commits and branches in git commands.
 #+begin_src emacs-lisp
 (use-package fish-completion
   :hook (eshell-mode . fish-completion-mode))
 #+end_src
-*** Command Highlighting
+**** Command Highlighting
 #+begin_src emacs-lisp
 (use-package eshell-syntax-highlighting
   :after esh-mode
   :config
   (eshell-syntax-highlighting-global-mode +1))
 #+end_src
-*** History Autocompletion
+**** History Autocompletion
 #+begin_src emacs-lisp
 (use-package esh-autosuggest
   :hook (eshell-mode . esh-autosuggest-mode)
@@ -1590,7 +1715,7 @@ This enhances eshell’s completions with those that Fish is capable of and also
   (set-face-foreground 'company-preview-common "#4b5668")
   (set-face-background 'company-preview nil))
 #+end_src
-*** Toggling Eshell
+**** Toggling Eshell
 This allows me to toggle an Eshell window below the current buffer for the the path of the buffer
 #+begin_src emacs-lisp
 (use-package eshell-toggle
@@ -1600,11 +1725,47 @@ This allows me to toggle an Eshell window below the current buffer for the the p
   (eshell-toggle-use-projectile-root t)
   (eshell-toggle-run-command nil))
 #+end_src
-** Vterm 
+*** Vterm 
 Vterm enables the use of fully-fledged terminal application
 #+begin_src emacs-lisp
 (use-package vterm
   :commands vterm
   :config
   (setq vterm-max-scrollback 10000))
+#+end_src
+** Elfeed 
+Elfeed is a super RSS feed reader
+#+begin_src emacs-lisp
+(use-package elfeed
+  :commands elfeed
+  :config
+  (setq elfeed-feeds
+        '("https://nullprogram.com/feed/"
+          "https://ambrevar.xyz/atom.xml"
+          "https://guix.gnu.org/feeds/blog.atom"
+          "https://valdyas.org/fading/feed/"
+          "https://www.reddit.com/r/emacs/.rss")))
+#+end_src
+** Media
+*** EMMS
+#+begin_src emacs-lisp
+(use-package emms
+  :commands emms
+  :config
+  (require 'emms-setup)
+  (emms-standard)
+  (emms-default-players)
+  (emms-mode-line-disable)
+  (setq emms-source-file-default-directory "/mnt/perceptormedia/Audio/music/")
+  (dn/leader-key-def
+    "am" '(:ignore t :which-key "media")
+    "amp" '(emms-pause :which-key "play / pause")
+    "amf" '(emms-play-file :which-key "play file")))
+#+end_src
+*** PulseAudio
+#+begin_src emacs-lisp
+(use-package pulseaudio-control
+  :commands pulseaudio-control-select-sink-by-name
+  :config
+  (setq pulseaudio-control-pactl-path "/usr/sbin/pactl"))
 #+end_src
