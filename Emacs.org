@@ -151,8 +151,8 @@ Setup ELPA, MELPA, and Org package repositories and load 'use-package to manage 
 
 
   (package-initialize)
-  ;; (unless package-archive-contents
-  ;;   (package-refresh-contents))
+  (unless package-archive-contents
+     (package-refresh-contents))
 
   ;; Initialize use-package on non-Linux platforms
   (unless (package-installed-p 'use-package)
