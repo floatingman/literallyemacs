@@ -687,8 +687,7 @@ Default to an indentation size of 2 spaces
   "dh"  `(,(dn/dired-link "~") :which-key "Home")
   "dn"  `(,(dn/dired-link "~/Notes") :which-key "Notes")
   "do"  `(,(dn/dired-link "~/Downloads") :which-key "Downloads")
-  "dp"  `(,(dn/dired-link "~/Pictures") :which-key "Pictures")
-  "dv"  `(,(dn/dired-link "~/Videos") :which-key "Videos")
+  "dr"  `(,(dn/dired-link "~/Repos") :which-key "Repos")
   "d."  `(,(dn/dired-link "~/.dotfiles") :which-key "dotfiles")
   "de"  `(,(dn/dired-link "~/.emacs.d") :which-key ".emacs.d"))
 #+end_src
