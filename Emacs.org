@@ -1,5 +1,5 @@
 #+TITLE: Emacs Configuration
-#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
+#+PROPERTY: header-args:emacs-lisp :tangle .emacs.d/init.el
 
 * Table of Contents
 :PROPERTIES:
@@ -87,6 +87,7 @@
     - [[#emacs-lisp][Emacs Lisp]]
     - [[#typescript-and-javascript][Typescript and JavaScript]]
     - [[#yaml][Yaml]]
+- [[#exwm][EXWM]]
 - [[#streamingpairing][Streaming/Pairing]]
 - [[#applications][Applications]]
   - [[#binding][Binding]]
@@ -1592,6 +1593,9 @@ Configure TypeScript and JavaScript language modes
 (use-package yaml-mode
   :mode "\\.ya?ml\\'")
 #+end_src
+* EXWM
+I'm trying out Emacs Windows manager for a bit
+
 * Streaming/Pairing
 #+begin_src emacs-lisp
   (use-package posframe)
