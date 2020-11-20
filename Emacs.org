@@ -27,6 +27,7 @@
     - [[#set-the-font][Set the font]]
     - [[#enable-proper-unicode-glyph-support][Enable proper Unicode glyph support]]
     - [[#emojis-in-buffers][Emojis in buffers]]
+    - [[#text-resizing][Text Resizing]]
   - [[#mode-line][Mode Line]]
     - [[#basic-customization][Basic Customization]]
     - [[#enable-mode-diminishing][Enable Mode Diminishing]]
@@ -188,17 +189,20 @@ https://github.com/daviwil/dotfiles/blob/f2c6fb1c80a8fe2f90f1a22e975b8b37dc9cf32
   (defmacro on-platform-do (&rest platform-expressions)
     `(cond
       ,@(mapcar
-	 (lambda (platform-expr)
+   (lambda (platform-expr)
        (let ((keyword (nth 0 platform-expr))
 	     (expr (nth 1 platform-expr)))
-	 `(,(if (listp keyword)
+   `(,(if (listp keyword)
 	   `(or
 	     ,@(mapcar
-		(lambda (kw) `(string-equal system-type ,(platform-keyword-to-string kw)))
-		keyword))
+	  (lambda (kw) `(string-equal system-type ,(platform-keyword-to-string kw)))
+	  keyword))
 	    `(string-equal system-type ,(platform-keyword-to-string keyword)))
 	    ,expr)))
-	 platform-expressions)))
+   platform-expressions)))
+
+  ;; Check if GUI is running
+  (defconst my/gui? (display-graphic-p))
 #+end_src
 * Start the server
 #+begin_src emacs-lisp
@@ -289,21 +293,28 @@ Rebind the universal argument to get around evil mode
 ** User Interface
 Clean up Emacs' user interface, make it more minimal
 #+begin_src emacs-lisp
-  ; Thanks, but no thanks
-  (setq inhibit-startup-message t)
+; Thanks, but no thanks
+(setq inhibit-startup-message t)
 
-  (scroll-bar-mode -1)        ; Disable visible scrollbar
-  (tool-bar-mode -1)          ; Disable the toolbar
-  (tooltip-mode -1)           ; Disable tooltips
-  (set-fringe-mode 10)        ; Give some breathing room
+(scroll-bar-mode -1)        ; Disable visible scrollbar
+(tool-bar-mode -1)          ; Disable the toolbar
+(tooltip-mode -1)           ; Disable tooltips
+(set-fringe-mode 10)        ; Give some breathing room
 
-  (menu-bar-mode -1)            ; Disable the menu bar
+(menu-bar-mode -1)            ; Disable the menu bar
 
-  ;; Set up the visible bell
-  (setq visible-bell t)
+;; Set up the visible bell
+(setq visible-bell t)
 
-  ;; disable dialog boxes
-  (setq use-dialog-box nil)
+;; disable dialog boxes
+(setq use-dialog-box nil)
+
+;; Changes all yes/no questions to y/n type.
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; Confirm emacs exit when in gui mode
+(when (window-system)
+  (setq confirm-kill-emacs 'yes-or-no-p))
 #+end_src
 
 Improve Scrolling
@@ -355,7 +366,56 @@ Trying out different themes
 
 *** Icons
  #+begin_src emacs-lisp
-   (use-package all-the-icons :defer t)
+ (use-package all-the-icons
+   :when my/gui?
+   :commands (all-the-icons-octicon
+              all-the-icons-faicon
+              all-the-icons-fileicon
+              all-the-icons-wicon
+              all-the-icons-material
+              all-the-icons-alltheicon)
+
+   :config
+   ;; IMPORTANT: changing the variables below may require restarting
+   ;; Emacs.
+   ;; IMPORTANT: if placeholders are being displayed instead of icons
+   ;; see https://github.com/domtronn/all-the-icons.el#troubleshooting
+
+   (setq all-the-icons-ivy-rich-icon-size 1.0)
+
+   ;; Icons by file name.
+   (add-to-list 'all-the-icons-icon-alist '("\\.conf$" all-the-icons-octicon "settings" :height 1.0 :v-adjust 0.0 :face all-the-icons-dyellow))
+   (add-to-list 'all-the-icons-icon-alist '("\\.service$" all-the-icons-octicon "settings" :height 1.0 :v-adjust 0.0 :face all-the-icons-dyellow))
+   (add-to-list 'all-the-icons-icon-alist '("^config$" all-the-icons-octicon "settings" :height 1.0 :v-adjust 0.0 :face all-the-icons-dyellow))
+
+   ;; Icons by directory name.
+   (add-to-list 'all-the-icons-dir-icon-alist '("emacs" all-the-icons-fileicon "emacs"))
+   (add-to-list 'all-the-icons-dir-icon-alist '("emacs\\.d" all-the-icons-fileicon "emacs"))
+   (add-to-list 'all-the-icons-dir-icon-alist '("spec" all-the-icons-fileicon "test-dir")))
+
+
+ ;; Ivy/counsel integration for `all-the-icons'.
+ (use-package all-the-icons-ivy
+   :when my/gui?
+   :after (ivy counsel-projectile)
+   :config
+   ;; Adds icons to counsel-projectile-find-file as well.
+   (setq all-the-icons-ivy-file-commands '(counsel-projectile-find-file))
+
+   (all-the-icons-ivy-setup))
+
+
+ ;; Displays icons for all buffers in Ivy.
+ (use-package all-the-icons-ivy-rich
+   :when my/gui?
+   :init (all-the-icons-ivy-rich-mode 1))
+
+
+ ;; Adds dired support to all-the-icons.
+ (use-package all-the-icons-dired
+   :when my/gui?
+   :defer t
+   :hook (dired-mode . all-the-icons-dired-mode))
  #+end_src
  
 ** Font
@@ -406,7 +466,18 @@ Based on which platform set an appropriate font
     :hook (erc-mode . emojify-mode)
     :commands emojify-mode)
 #+end_src
-
+*** Text Resizing
+Easily adjust the font size in all Emacs frames.
+#+begin_src emacs-lisp
+(use-package default-text-scale
+  :when my/gui?
+  :defer t
+  :init
+  (general-define-key
+   "M-=" #'default-text-scale-increase
+   "M--" #'default-text-scale-decrease
+   "M-0" #'default-text-scale-reset))
+#+end_src
 ** Mode Line
 *** Basic Customization
  #+begin_src emacs-lisp
