@@ -36,7 +36,8 @@
   - [[#auto-saving-changed-files][Auto-Saving Changed Files]]
   - [[#auto-reverting-changed-files][Auto-Reverting Changed Files]]
   - [[#ui-toggles][UI Toggles]]
-- [[#editing-configurations][Editing Configurations]]
+  - [[#sudo-save][Sudo Save]]
+- [[#edit-configurations][Edit Configurations]]
   - [[#tab-widths][Tab Widths]]
   - [[#spaces-instead-of-tabs][Spaces instead of tabs]]
 - [[#hail-hydra][Hail Hydra]]
@@ -544,7 +545,11 @@ Easily adjust the font size in all Emacs frames.
     "tw" 'whitespace-mode
     "tt" '(counsel-load-theme :which-key "choose theme"))
 #+end_src
-* Editing Configurations
+** Sudo Save
+#+begin_src emacs-lisp
+(use-package sudo-edit)
+#+end_src
+* Edit Configurations
 ** Tab Widths
 Default to an indentation size of 2 spaces
 #+begin_src emacs-lisp
